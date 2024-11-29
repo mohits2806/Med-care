@@ -1,0 +1,68 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Reminder System</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Medicine Reminder System</h1>
+        
+        <div class="add-medicine-form">
+            <h2>Add New Medicine</h2>
+            <form id="medicineForm">
+                <div class="form-group">
+                    <label for="medicineName">Medicine Name:</label>
+                    <input type="text" id="medicineName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dosage">Dosage:</label>
+                    <input type="text" id="dosage" placeholder="e.g., 1 tablet" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Frequency:</label>
+                    <div class="days-selector">
+                        <label><input type="checkbox" value="Sunday"> Sun</label>
+                        <label><input type="checkbox" value="Monday"> Mon</label>
+                        <label><input type="checkbox" value="Tuesday"> Tue</label>
+                        <label><input type="checkbox" value="Wednesday"> Wed</label>
+                        <label><input type="checkbox" value="Thursday"> Thu</label>
+                        <label><input type="checkbox" value="Friday"> Fri</label>
+                        <label><input type="checkbox" value="Saturday"> Sat</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="timesPerDay">Times per day:</label>
+                    <select id="timesPerDay">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+
+                <div id="timeInputs" class="form-group">
+                    <label>Time:</label>
+                    <div class="time-input">
+                        <input type="time" class="medicine-time" required>
+                    </div>
+                </div>
+
+                <button type="submit">Add Medicine</button>
+            </form>
+        </div>
+
+        <div class="medicine-list">
+            <h2>Your Medicines</h2>
+            <div id="medicinesList"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
