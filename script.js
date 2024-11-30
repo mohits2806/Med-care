@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(() => {
             const now = new Date();
             const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
-            const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            const currentTime = now.toLocaleTimeString('en-US', { hour12:false, hour: '2-digit', minute: '2-digit' });
 
             medicines.forEach(medicine => {
                 if (medicine.days.includes(currentDay)) {
