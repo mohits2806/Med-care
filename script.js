@@ -1,5 +1,7 @@
-// public/script.js
-const notificationSound = new Audio('/notification.mp3');
+// script.js
+
+// At the top of your script.js
+const notificationSound = new Audio('./notification.mp3');
 
 function setupNotifications(medicines) {
     // Check permissions first
@@ -37,35 +39,6 @@ function checkMedicines(medicines) {
             });
         }
     });
-}
-
-function notifyUser(medicine) {
-    if (Notification.permission === 'granted') {
-        // Play notification sound
-        notificationSound.play().catch(e => console.log('Sound play error:', e));
-
-        // Create notification
-        const notification = new Notification('Medicine Reminder', {
-            body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}`,
-            icon: '/favicon.ico', // Add a favicon.ico to your public folder
-            badge: '/favicon.ico',
-            requireInteraction: true // Notification will persist until user interacts
-        });
-
-        // Handle notification click
-        notification.onclick = function() {
-            window.focus();
-            this.close();
-        };
-
-        // Store in localStorage that this notification was shown
-        const notificationLog = JSON.parse(localStorage.getItem('notificationLog') || '[]');
-        notificationLog.push({
-            medicineId: medicine.id,
-            time: new Date().toISOString()
-        });
-        localStorage.setItem('notificationLog', JSON.stringify(notificationLog));
-    }
 }
 
 // Add this to ensure notification permissions are requested when page loads
@@ -116,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveMedicine() {
         const patientName = document.getElementById('patientName').value;
         const medicineName = document.getElementById('medicineName').value;
+        const mealRelation = document.querySelector('input[name="mealRelation"]:checked')?.value;
         const dosage = document.getElementById('dosage').value;
         const selectedDays = [...document.querySelectorAll('.days-selector input:checked')]
             .map(checkbox => checkbox.value);
@@ -126,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: Date.now(),
             patName: patientName,
             name: medicineName,
+            mealRelation: mealRelation,
             dosage: dosage,
             days: selectedDays,
             times: times
@@ -155,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>Patient Name: ${medicine.patName}</h3>
                 <h3>Medicine Name: ${medicine.name}</h3>
                 <p>Dosage: ${medicine.dosage}</p>
+                <p>Meal Relation: ${medicine.mealRelation}</p>
                 <p>Days: ${medicine.days.join(', ')}</p>
                 <p>Times: ${medicine.times.join(', ')}</p>
                 <button id='deleteBtn' onclick="deleteMedicine(${medicine.id})">Delete</button>
@@ -183,15 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 60000); // Check every minute
     }
 
-    function notifyUser(medicine) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Medicine Reminder', {
-                body: `Hey ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}`,
-                icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_FUNpkbm3tJHYt4I6WjtOtdizk-LcgPi0YA&s' // Add your icon URL
-            });
-        }
-    }
-
     // Add to window object to make it accessible from HTML
     window.deleteMedicine = function(id) {
         const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
@@ -201,13 +168,47 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 });
 
-// Register service worker
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-            console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch(error => {
-            console.error('Service Worker registration failed:', error);
+// Define notifyUser function once, outside event listener
+async function notifyUser(medicine) {
+    if (Notification.permission === 'granted') {
+        // Update the notification play code inside notifyUser function
+    try {
+        // Load and play notification sound
+        notificationSound.load(); // Reset the audio
+        notificationSound.volume = 1.0; // Set volume to maximum
+        await notificationSound.play()
+            .catch(error => {
+                console.error('Failed to play notification sound:', error);
+                // Fallback to browser default notification sound if available
+                if ('AudioContext' in window) {
+                    const audioContext = new AudioContext();
+                    audioContext.createOscillator().connect(audioContext.destination);
+                }
+            });
+    } catch (error) {
+        console.error('Audio system error:', error);
+    }
+
+        // Create notification
+        const notification = new Notification('Medicine Reminder', {
+            body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/172/172011.png',
+            badge: 'https://cdn-icons-png.flaticon.com/512/172/172011.png',
+            requireInteraction: true // Notification will persist until user interacts
         });
+
+        // Handle notification click
+        notification.onclick = function() {
+            window.focus();
+            this.close();
+        };
+
+        // Store in localStorage that this notification was shown
+        const notificationLog = JSON.parse(localStorage.getItem('notificationLog') || '[]');
+        notificationLog.push({
+            medicineId: medicine.id,
+            time: new Date().toISOString()
+        });
+        localStorage.setItem('notificationLog', JSON.stringify(notificationLog));
+    }
 }

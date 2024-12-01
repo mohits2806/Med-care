@@ -51,6 +51,18 @@ select {
     font-size: 14px;
 }
 
+.meal-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.meal-selector label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .days-selector {
     display: flex;
     gap: 10px;
