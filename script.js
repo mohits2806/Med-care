@@ -202,113 +202,51 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-// Helper function to detect mobile device
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-// Unified notification function
+// Define notifyUser function once, outside event listener
 async function notifyUser(medicine) {
-    if (!('Notification' in window)) {
-        console.warn('This device does not support notifications');
-        return;
-    }
-
-    // Load notification sound
-    const notificationSound = new Audio('./notification.mp3');
-
-    if (isMobileDevice()) {
-        // Mobile notification
-        try {
-            // Request permission if needed
-            if (Notification.permission !== 'granted') {
-                const permission = await Notification.requestPermission();
-                if (permission !== 'granted') return;
-            }
-
-            // Create mobile-optimized notification
-            const notification = new Notification('Med-Care', {
-                body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`,
-                icon: './favicon.ico',
-                badge: './favicon.ico',
-                requireInteraction: true,
-                tag: `medicine-${medicine.id}`,
-                renotify: true,
-                actions: [
-                    { action: 'take', title: '✓ Take' },
-                    { action: 'snooze', title: '⏰ Later' }
-                ],
-                vibrate: [200, 100, 200], // Vibration pattern
-                silent: false
-            });
-
-            // Play sound
-            await notificationSound.play();
-
-            // Add mobile-specific handlers
-            notification.onclick = function() {
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(100); // Feedback vibration
-                }
-                window.focus();
-                this.close();
-            };
-
-            // Handle actions
-            notification.addEventListener('action', function(event) {
-                if (event.action === 'take') {
-                    // Log medicine as taken
-                    logMedicineTaken(medicine);
-                } else if (event.action === 'snooze') {
-                    // Reschedule notification for 5 minutes later
-                    setTimeout(() => notifyUser(medicine), 5 * 60 * 1000);
-                }
-            });
-
-        } catch (error) {
-            console.error('Mobile notification failed:', error);
-            // Fallback to simple alert
-            alert(`Medicine Reminder: ${medicine.name} - ${medicine.dosage}`);
+  if (Notification.permission === "granted") {
+    // Update the notification play code inside notifyUser function
+    try {
+      // Load and play notification sound
+      notificationSound.load(); // Reset the audio
+      notificationSound.volume = 1.0; // Set volume to maximum
+      await notificationSound.play().catch((error) => {
+        console.error("Failed to play notification sound:", error);
+        // Fallback to browser default notification sound if available
+        if ("AudioContext" in window) {
+          const audioContext = new AudioContext();
+          audioContext.createOscillator().connect(audioContext.destination);
         }
-
-    } else {
-        // Desktop notification
-        const notification = new Notification('Med-Care', {
-            body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`,
-            icon: './favicon.ico',
-            badge: './favicon.ico',
-            requireInteraction: true,
-            actions: [
-                { action: 'take', title: 'Take Now' },
-                { action: 'snooze', title: 'Remind Later' }
-            ]
-        });
-
-        // Play sound
-        await notificationSound.play().catch(e => console.warn('Sound play error:', e));
-
-        // Handle notification click
-        notification.onclick = function() {
-            window.focus();
-            this.close();
-        };
+      });
+    } catch (error) {
+      console.error("Audio system error:", error);
+      // Show alert with error details
+      alert(`Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`);
+      notificationSound.play();
     }
 
-    // Log notification
-    const notificationLog = JSON.parse(localStorage.getItem('notificationLog') || '[]');
-    notificationLog.push({
-        medicineId: medicine.id,
-        time: new Date().toISOString()
+    // Create notification
+    const notification = new Notification("Medicine Reminder", {
+      body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`,
+      icon: "https://cdn-icons-png.flaticon.com/512/172/172011.png",
+      badge: "https://cdn-icons-png.flaticon.com/512/172/172011.png",
+      requireInteraction: true, // Notification will persist until user interacts
     });
-    localStorage.setItem('notificationLog', JSON.stringify(notificationLog));
-}
 
-// Helper function to log medicine as taken
-function logMedicineTaken(medicine) {
-    const takenLog = JSON.parse(localStorage.getItem('takenMedicines') || '[]');
-    takenLog.push({
-        medicineId: medicine.id,
-        time: new Date().toISOString()
+    // Handle notification click
+    notification.onclick = function () {
+      window.focus();
+      this.close();
+    };
+
+    // Store in localStorage that this notification was shown
+    const notificationLog = JSON.parse(
+      localStorage.getItem("notificationLog") || "[]"
+    );
+    notificationLog.push({
+      medicineId: medicine.id,
+      time: new Date().toISOString(),
     });
-    localStorage.setItem('takenMedicines', JSON.stringify(takenLog));
+    localStorage.setItem("notificationLog", JSON.stringify(notificationLog));
+  }
 }
