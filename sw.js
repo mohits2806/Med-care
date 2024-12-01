@@ -88,25 +88,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Push notification event
-self.addEventListener('push', event => {
-  const options = {
-    body: event.data?.text() || 'Time to take your medicine',
-    icon: './favicon.ico',
-    badge: './favicon.ico',
-    actions: [
-      { action: 'take', title: 'Take Now' },
-      { action: 'snooze', title: 'Snooze' }
-    ],
-    requireInteraction: true,
-    tag: 'medicine-reminder'
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('Medicine Reminder', options)
-  );
-});
-
 // Notification click event
 self.addEventListener('notificationclick', event => {
   event.notification.close();
@@ -166,5 +147,9 @@ function syncRecords() {
 
 // Simulate background sync every 5 minutes
 setInterval(() => {
-  self.registration.sync.register('sync-medicines');
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.sync.register('sync-medicines');
+    }).catch(err => console.error('Sync registration failed:', err));
+  }
 }, 300000); // 5 minutes
