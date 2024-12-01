@@ -92,3 +92,7 @@ button:hover {
 .time-input {
     margin-bottom: 10px;
 }
+
+#deleteBtn{
+    background-color: red;
+}

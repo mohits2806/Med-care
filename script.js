@@ -46,7 +46,7 @@ function notifyUser(medicine) {
 
         // Create notification
         const notification = new Notification('Medicine Reminder', {
-            body: `Hey, ${medicine.patName}, Its your time to take ${medicine.name} - ${medicine.dosage}`,
+            body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}`,
             icon: '/favicon.ico', // Add a favicon.ico to your public folder
             badge: '/favicon.ico',
             requireInteraction: true // Notification will persist until user interacts
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>Dosage: ${medicine.dosage}</p>
                 <p>Days: ${medicine.days.join(', ')}</p>
                 <p>Times: ${medicine.times.join(', ')}</p>
-                <button onclick="deleteMedicine(${medicine.id})">Delete</button>
+                <button id='deleteBtn' onclick="deleteMedicine(${medicine.id})">Delete</button>
             </div>
         `).join('');
     
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function notifyUser(medicine) {
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Medicine Reminder', {
-                body: `Hey ${medicine.patName}, Its your time to take ${medicine.name} - ${medicine.dosage}`,
+                body: `Hey ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}`,
                 icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_FUNpkbm3tJHYt4I6WjtOtdizk-LcgPi0YA&s' // Add your icon URL
             });
         }
@@ -200,3 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMedicines();
     };
 });
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(error => {
+            console.error('Service Worker registration failed:', error);
+        });
+}

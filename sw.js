@@ -15,9 +15,7 @@ self.addEventListener('install', event => {
     (async () => {
       try {
         const cache = await caches.open(CACHE_NAME);
-        // Cache root path
-        await cache.add('./');
-        // Cache static assets
+        console.log('Caching static assets');
         for (const asset of STATIC_ASSETS) {
           try {
             await cache.add(new Request(asset, { cache: 'reload' }));
@@ -37,7 +35,6 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
-      // Clear old caches
       const keys = await caches.keys();
       await Promise.all(
         keys.map(key => {
@@ -61,7 +58,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     (async () => {
       try {
-        // Try cache first
         const cache = await caches.open(CACHE_NAME);
         const cachedResponse = await cache.match(event.request);
         
@@ -69,10 +65,8 @@ self.addEventListener('fetch', event => {
           return cachedResponse;
         }
 
-        // Fall back to network
         const response = await fetch(event.request);
         
-        // Cache successful responses
         if (response.ok && response.type === 'basic') {
           const responseToCache = response.clone();
           try {
@@ -84,7 +78,6 @@ self.addEventListener('fetch', event => {
         
         return response;
       } catch (err) {
-        // Return cached index.html for navigation requests
         if (event.request.mode === 'navigate') {
           const cache = await caches.open(CACHE_NAME);
           return cache.match('./index.html');
@@ -122,7 +115,7 @@ self.addEventListener('notificationclick', event => {
     event.waitUntil(
       (async () => {
         try {
-          await storeRecord({
+          storeRecord({
             time: new Date().toISOString(),
             action: 'taken'
           });
@@ -144,82 +137,34 @@ self.addEventListener('notificationclick', event => {
   );
 });
 
-// IndexedDB setup
-const DB_NAME = 'MedicineDB';
-const STORE_NAME = 'medicine-records';
-const DB_VERSION = 1;
-
-async function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    
-    request.onupgradeneeded = event => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { 
-          keyPath: 'time',
-          autoIncrement: true 
-        });
-      }
-    };
-  });
+// Store record in localStorage
+function storeRecord(record) {
+  const records = JSON.parse(localStorage.getItem('medicineRecords') || '[]');
+  records.push(record);
+  localStorage.setItem('medicineRecords', JSON.stringify(records));
 }
 
-async function storeRecord(record) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    
-    const request = store.add(record);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-    
-    tx.oncomplete = () => db.close();
-  });
-}
-
-// Background sync
+// Background sync (simulated with setInterval)
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-medicines') {
     event.waitUntil(syncRecords());
   }
 });
 
-async function syncRecords() {
+function syncRecords() {
   try {
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const records = await new Promise((resolve, reject) => {
-      const request = store.getAll();
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-
+    const records = JSON.parse(localStorage.getItem('medicineRecords') || '[]');
     if (records.length > 0) {
-      const response = await fetch('./api/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(records)
-      });
-
-      if (response.ok) {
-        const deleteTx = db.transaction(STORE_NAME, 'readwrite');
-        const deleteStore = deleteTx.objectStore(STORE_NAME);
-        await new Promise((resolve, reject) => {
-          const request = deleteStore.clear();
-          request.onsuccess = () => resolve();
-          request.onerror = () => reject(request.error);
-        });
-      }
+      console.log('Syncing records:', records);
+      // Simulate successful sync by clearing localStorage
+      localStorage.removeItem('medicineRecords');
     }
   } catch (err) {
     console.error('Sync failed:', err);
   }
 }
+
+// Simulate background sync every 5 minutes
+setInterval(() => {
+  self.registration.sync.register('sync-medicines');
+}, 300000); // 5 minutes
