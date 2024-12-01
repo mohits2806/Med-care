@@ -46,7 +46,7 @@ function notifyUser(medicine) {
 
         // Create notification
         const notification = new Notification('Medicine Reminder', {
-            body: `Time to take ${medicine.name} - ${medicine.dosage}`,
+            body: `Hey, ${medicine.patName}, Its your time to take ${medicine.name} - ${medicine.dosage}`,
             icon: '/favicon.ico', // Add a favicon.ico to your public folder
             badge: '/favicon.ico',
             requireInteraction: true // Notification will persist until user interacts
@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveMedicine() {
+        const patientName = document.getElementById('patientName').value;
         const medicineName = document.getElementById('medicineName').value;
         const dosage = document.getElementById('dosage').value;
         const selectedDays = [...document.querySelectorAll('.days-selector input:checked')]
@@ -123,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const medicine = {
             id: Date.now(),
+            patName: patientName,
             name: medicineName,
             dosage: dosage,
             days: selectedDays,
@@ -144,18 +146,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadMedicines() {
         const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
-        medicinesList.innerHTML = medicines.map(medicine => `
+        
+        // Sort medicines by id (timestamp) in descending order
+        const sortedMedicines = medicines.sort((a, b) => b.id - a.id);
+        
+        medicinesList.innerHTML = sortedMedicines.map(medicine => `
             <div class="medicine-item">
-                <h3>${medicine.name}</h3>
+                <h3>Patient Name: ${medicine.patName}</h3>
+                <h3>Medicine Name: ${medicine.name}</h3>
                 <p>Dosage: ${medicine.dosage}</p>
                 <p>Days: ${medicine.days.join(', ')}</p>
                 <p>Times: ${medicine.times.join(', ')}</p>
                 <button onclick="deleteMedicine(${medicine.id})">Delete</button>
             </div>
         `).join('');
-
+    
         // Set up notifications for each medicine
-        setupNotifications(medicines);
+        setupNotifications(sortedMedicines);
     }
 
     function setupNotifications(medicines) {
@@ -179,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function notifyUser(medicine) {
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Medicine Reminder', {
-                body: `Time to take ${medicine.name} - ${medicine.dosage}`,
-                icon: 'https://example.com/icon.png' // Add your icon URL
+                body: `Hey ${medicine.patName}, Its your time to take ${medicine.name} - ${medicine.dosage}`,
+                icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_FUNpkbm3tJHYt4I6WjtOtdizk-LcgPi0YA&s' // Add your icon URL
             });
         }
     }

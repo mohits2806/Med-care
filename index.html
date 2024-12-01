@@ -4,17 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicine Reminder System</title>
+    <title>MedCare - Medicine Reminder System</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <div class="container">
-        <h1>Medicine Reminder System</h1>
+        <h1> MedCare - Medicine Reminder System</h1>
         
         <div class="add-medicine-form">
             <h2>Add New Medicine</h2>
             <form id="medicineForm">
+                <div class="form-group">
+                    <label for="patientName">Patient Name:</label>
+                    <input type="text" id="patientName" required>
+                </div>
+
                 <div class="form-group">
                     <label for="medicineName">Medicine Name:</label>
                     <input type="text" id="medicineName" required>
