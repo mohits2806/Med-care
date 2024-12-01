@@ -225,6 +225,11 @@ async function notifyUser(medicine) {
       notificationSound.play();
     }
 
+    if(window.innerWidth < 600){
+        alert(`Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`);
+        notificationSound.play();
+    }
+
     // Create notification
     const notification = new Notification("Medicine Reminder", {
       body: `Hey, ${medicine.patName}, It's your time to take ${medicine.name} - ${medicine.dosage}, Make sure to take it ${medicine.mealRelation}`,
