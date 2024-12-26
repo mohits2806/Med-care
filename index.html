@@ -38,26 +38,26 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Frequency:</label>
-                    <div class="days-selector">
-                        <label><input type="checkbox" value="Sunday"> Sun</label>
-                        <label><input type="checkbox" value="Monday"> Mon</label>
-                        <label><input type="checkbox" value="Tuesday"> Tue</label>
-                        <label><input type="checkbox" value="Wednesday"> Wed</label>
-                        <label><input type="checkbox" value="Thursday"> Thu</label>
-                        <label><input type="checkbox" value="Friday"> Fri</label>
-                        <label><input type="checkbox" value="Saturday"> Sat</label>
-                    </div>
+                    <label for="frequency">Frequency:</label>
+                    <select id="frequency">
+                        <option value="Everyday">Everyday</option>
+                        <option value="Sunday">Sun</option>
+                        <option value="Monday">Mon</option>
+                        <option value="Tuesday">Tue</option>
+                        <option value="Wednesday">Wed</option>
+                        <option value="Thursday">Thu</option>
+                        <option value="Friday">Fri</option>
+                        <option value="Saturday">Sat</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label for="timesPerDay">Times per day:</label>
-                    <select id="timesPerDay">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
+                    <div class="quantity-controls">
+                        <button type="button" id="decrease">-</button>
+                        <input type="number" id="timesPerDay" value="1" min="1" required>
+                        <button type="button" id="increase">+</button>
+                    </div>
                 </div>
 
                 <div id="timeInputs" class="form-group">
